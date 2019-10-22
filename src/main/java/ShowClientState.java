@@ -6,6 +6,7 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -52,19 +53,27 @@ public class ShowClientState extends HttpServlet {
                 String state = val;
  
                 DAO dao = new DAO(DataSourceFactory.getDataSource());
-                CustomerEntity customer = dao.findCustomer(customerID);
-                if (customer == null) {
-                    throw new Exception("Client inconnu");
+                List<CustomerEntity> customerList=dao.customersInState(state);
+                
+                if (customerList == null) {
+                    throw new Exception("Pays inconnu");
                 }
-                // Afficher les propriétés du client         
-                out.printf("Customer n° %d <br> name: %s <br> address: %s",
-                    customerID,
+                // Afficher les propriétés du client   
+                out.println("<table border=\"1\"><tr><td>ID</td><td>Name</td><td>Adresse</td></tr>");
+                for( CustomerEntity customer : customerList){
+                out.println("<tr>");
+                out.printf("<td>%d</td><td>%s</td><td>%s</td>",
+                    customer.getCustomerId(),
                     customer.getName(),
                     customer.getAddressLine1());
+                out.println("</tr>");
+                }
+                out.println("</table>");
+                
             } catch (Exception e) {
                 out.printf("Erreur : %s", e.getMessage());
             }
-            out.printf("<hr><a href='%s'>Retour au menu</a>", request.getContextPath());
+            out.printf("<a href='%s'>Retour au menu</a>", request.getContextPath());
             out.println("</body>");
             out.println("</html>");
         } catch (Exception ex) {

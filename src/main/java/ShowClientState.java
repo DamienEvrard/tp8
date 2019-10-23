@@ -6,6 +6,7 @@
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,16 +45,63 @@ public class ShowClientState extends HttpServlet {
             out.println("<title>Servlet ShowClient</title>");
             out.println("</head>");
             out.println("<body>");
-            try {   // Trouver la valeur du paramètre HTTP customerID
-                String val = request.getParameter("state");
+            try {   
+                DAOEXT daoext = new DAOEXT(DataSourceFactory.getDataSource());
+                ArrayList<String> val=daoext.getState();
                 if (val == null) {
-                    throw new Exception("La paramètre state n'a pas été transmis");
+                    throw new Exception("States introuvable");
                 }
                 // on doit convertir cette valeur en entier (attention aux exceptions !)
-                String state = val;
- 
+                ArrayList<String> state = val;
+                
+                
+                out.println("<form method=\"post\"><select  name=\"state\">");
+                for(String sta : state){
+                    out.printf("<option value=\"%s\">%s</option>", sta,sta);
+                }
+                out.println("</select><input type=\"submit\" value=\"Valider\" /></form>");
+                
+            out.printf("<a href='%s'>Retour au menu</a>", request.getContextPath());
+            out.println("</body>");
+            out.println("</html>");
+        } catch (Exception ex) {
+            Logger.getLogger("servlet").log(Level.SEVERE, "Erreur de traitement", ex);
+        }
+    }
+    }
+    
+        
+        
+    protected void affiche(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ShowClient</title>");
+            out.println("</head>");
+            out.println("<body>");
+            try {   
+                DAOEXT daoext = new DAOEXT(DataSourceFactory.getDataSource());
+                ArrayList<String> val=daoext.getState();
+                if (val == null) {
+                    throw new Exception("States introuvable");
+                }
+                // on doit convertir cette valeur en entier (attention aux exceptions !)
+                ArrayList<String> state = val;
+                
+                
+                out.println("<form method=\"post\"><select  name=\"state\">");
+                for(String sta : state){
+                    out.printf("<option value=\"%s\">%s</option>", sta,sta);
+                }
+                out.println("</select><input type=\"submit\" value=\"Valider\"/></form>");
+                    
+                String stateC = request.getParameter("state");
+                
                 DAO dao = new DAO(DataSourceFactory.getDataSource());
-                List<CustomerEntity> customerList=dao.customersInState(state);
+                List<CustomerEntity> customerList=dao.customersInState(stateC);
                 
                 if (customerList == null) {
                     throw new Exception("Pays inconnu");
@@ -107,7 +155,8 @@ public class ShowClientState extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        affiche(request, response);
+        
     }
 
     /**
